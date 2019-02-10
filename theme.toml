@@ -1,0 +1,21 @@
+# theme.toml template for a Hugo theme
+# See https://github.com/gohugoio/hugoThemes#themetoml for an example
+
+name = "Responsive"
+license = "Apache 2.0"
+licenselink = "https://github.com/JonathanDoughty/hugo-responsive-components/blob/master/LICENSE"
+description = "Partials and Shortcodes to generate responsive images"
+homepage = "https://github.com/JonathanDoughty/hugo-responsive-components.git"
+tags = [hugo responsive images]
+features = []
+min_version = "0.41"
+
+[author]
+  name = "Jonathan Doughty"
+  homepage = "https://jwdoughty.com"
+
+# If porting an existing theme
+[original]
+  name = ""
+  homepage = ""
+  repo = ""

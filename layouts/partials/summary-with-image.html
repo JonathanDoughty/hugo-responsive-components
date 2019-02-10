@@ -1,0 +1,18 @@
+{{ $featured_image := .Params.featured_image }}
+<article class="bb b--black-10">
+  <div class="db pv2 ph3 ph0-l link no-underline text-color shadow-hover">
+    <div class="flex flex-column flex-row-ns">
+      {{ if .Params.featured_image }}
+        {{/* Trimming ... absURL make sure the image works no matter where our site lives */}}
+        {{ $featured_image := (path.Join "images" $featured_image) | absURL }}
+        <div class="pr3-ns pl2 mb2 mb0-ns w-100 w-40-ns">
+          <a href="{{ .URL }}" class="db grow dim">
+          {{- $.Scratch.Set "image" $featured_image -}}
+          {{ partial "img-srcset.html" . }}
+          </a>
+        </div>
+      {{ end }}
+      {{ partial "summary-text.html" . }}
+    </div>
+  </div>
+</article>

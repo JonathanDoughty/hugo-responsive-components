@@ -1,0 +1,36 @@
+{{/* See also img-srcset.html */}}
+{{- $image := replaceRE "^https?://[^/]+/(.*)" "$1" ($.Scratch.Get "image") -}}
+{{- $media := (.Site.GetPage "page" "media").Resources -}}
+{{- $original := index ($media.Match (printf "%s" $image)) 0 -}}
+{{- $width := $original.Width -}}
+{{- $intWidth := int $width -}}
+{{- $sizes := (sort ($.Param "sizes") "value" ) -}}
+{{- $options := $.Param "header_options" -}}
+{{- $first := index (first 1 $sizes) 0 -}}
+{{- $last := index (last 1 $sizes) 0 -}}
+{{- $debug := false -}}
+{{- if (or $debug (not $original)) -}}{{/* if image can't be found provide some help */}}
+  <div id="can-delete">
+	<table>
+	  <thead>
+		<tr><td>Variable</td><td>Value</td></tr>
+	  </thead>
+	  <tbody>
+		<tr><td>Image</td><td>{{ $image }}</td></tr>
+		<tr><td>Image Path</td><td>{{ (or $original.RelPermalink "Not Found") }}</td></tr>
+		<tr><td>Sizes array</td><td>{{$sizes}}</td></tr>
+		<tr><td>Options</td><td>{{ $options }}</td></tr>
+	  </tbody>
+	</table>
+  </div>
+{{- end -}}
+{{/*<p> first = {{ $first }} last = {{ $last }} sizes {{ $sizes }}</p>*/}}
+<style scoped>
+{{- $lastsize := 0 -}}
+{{ range $size := $sizes }}
+  {{- $img := ($original.Resize (printf "%dx %s" $size $options)) -}}
+  {{- $mediawidth := (cond (ne $size $first) ( printf "and (min-width: %dpx)" $lastsize ) ( printf "and (max-width: %dpx)" $size ) ) -}}
+  {{ (printf "  @media only screen %s {\n  .cover {\n    background-image: url('%s') \n      } \n    }\n" $mediawidth $img.RelPermalink ) | safeCSS -}}
+  {{- $lastsize = $size -}}
+{{- end -}}
+</style>

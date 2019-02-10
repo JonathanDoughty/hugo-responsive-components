@@ -1,0 +1,15 @@
+<div class="w-100{{ if .Params.featured_image }} w-70-ns ph2-ns{{ else }} ph3-ns{{ end }}">
+  <h1 class="summary f4 f3-l fw4 mt0 lh-title">
+    <a href="{{.URL}}" class="color-inherit dim link underline-hover">
+      {{ .Title }}
+    </a>
+  </h1>
+  <div class="summary f5 f4-l fw2-ns lh-copy nested-copy-line-height">
+    {{ if (gt (len .Description) 0) }}
+      {{- .Description -}}
+    {{ else }}
+      {{- .Summary | plainify | safeHTML -}}
+    {{ end }}
+  </div>
+  <a href="{{.URL}}" class="ba b--moon-gray bg-light-gray br2 color-inherit dib f7 hover-bg-moon-gray link mt2 ph2 pv1">{{$.Param "read_more_copy" | default "More &raquo;" | safeHTML }}</a>
+</div>

@@ -1,0 +1,119 @@
+{{/* Adapted from https://gist.github.com/randallmlough/98c9c949b25f2a41259029e03dd037f3 */}}
+{{/* trim leading slash left over from old references */}}
+{{- $image := (path.Join "images" (.Get "src")) -}}
+{{- $media := (.Site.GetPage "page" "media").Resources -}}
+{{- $original := index ($media.Match (printf "%s" $image)) 0 -}}
+{{- $class := .Get "class" -}}
+{{- $link := .Get "link" -}}
+{{- $caption := .Get "caption" -}}
+{{- $title := .Get "title" -}}
+{{- $alt := .Get "alt" -}}
+{{- $attrlink := .Get "attrlink" -}}
+{{- $attr := .Get "attr" -}}
+{{- $width := $original.Width -}}
+{{- $intWidth := int $width -}}
+{{- $.Scratch.Set "sizes" .Site.Params.sizes -}}
+{{- if .Get "sizes" -}}
+{{- $.Scratch.Set "sizes" (apply (split (.Get "sizes") " ") "int" ".") -}}
+{{- end -}}
+{{- $sizes := .Scratch.Get "sizes" -}}
+{{- $.Scratch.Set "options" .Site.Params.options -}}
+{{- if .Get "opts" -}}
+{{- $.Scratch.Set "options" (.Get "opts") -}}
+{{- end -}}
+{{- $options := $.Scratch.Get "options" -}}
+{{- $debug := false -}}
+{{- $includeSource := false -}}{{/* true: Use picture element with source definitions */}}
+{{- $includeSizes := true -}}{{/* true: Provide img sizes attribute */}}
+{{- if (or $debug  (not $original)) -}}{{/* if image can't be found provide some help */}}
+  <div id="can-delete">
+    <table>
+      <thead>
+        <tr><td>Variable</td><td>Value</td></tr>
+      </thead>
+      <tbody>
+        <tr><td>Image</td><td>{{ $image }}</td></tr>
+        <tr><td>Caption</td><td>{{ $caption }}</td></tr>
+        <tr><td>Title</td><td>{{ $title }}</td></tr>
+        <tr><td>Alt</td><td>{{ $alt }}</td></tr>
+        <tr><td>attr</td><td>{{ $attr }}</td></tr>
+        <tr><td>attrlink</td><td>{{ $attrlink }}</td></tr>
+        <tr><td>Image Path</td><td>{{ (or $original.RelPermalink "Not Found") }}</td></tr>
+        <tr><td>Original Size</td><td>{{$width}}</td></tr>
+        <tr><td>Sizes array</td><td>{{$sizes}}</td></tr>
+        <tr><td>Options</td><td>{{ $options }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+{{- end -}}
+{{- $usePicture := false -}}{{/* true: Use picture element with source definitions */}}
+{{- $multipleSizes := true -}}{{/* true: Provide multiple img sizes attribute */}}
+<div class="picture">
+  {{ if (or $title $caption) -}}
+    <figure>
+  {{ end -}}
+  {{- if $usePicture -}}
+  <picture>
+  <!--[if IE 9]><video style="display: none;"><![endif]-->
+  {{- end -}}
+  {{- $.Scratch.Set "srcPath" ($original.RelPermalink) }}
+  {{- range $i, $sort := (seq (len $sizes)) -}}
+    {{- if ge (index $sizes $i) 10 -}}
+      {{- $.Scratch.Add "sort" (slice (index $sizes $i)) -}}
+    {{- else -}}
+      {{- $floatSize := float (index $sizes $i) -}}
+      {{- $newSize := (math.Round (mul $intWidth $floatSize)) -}}
+      {{- $int2string := string $newSize -}}
+      {{- $.Scratch.Add "sort" (slice $int2string) -}}
+    {{- end -}}
+  {{- end -}}
+  {{- $sort := (sort (.Scratch.Get "sort") "value" "asc" ) -}}
+  {{- range $i, $num := (seq (len $sort )) -}}
+    {{- $imgSize := index $sort $i -}}
+    {{- $img := ($original.Resize (printf "%dx %s" $imgSize $options)) -}}
+    {{- $.Scratch.Add "sizes" (slice $img.Width) -}}
+    {{- $.Scratch.Set "srcPath" $img.RelPermalink }}
+    {{- $int2string := string $img.Width -}}
+    {{- $.Scratch.Add "srcsetdef" (slice (printf "%s %sw" $img.RelPermalink $int2string)) -}}
+    {{ $srcset := (printf "%s " $img.RelPermalink) -}}
+    {{- if $usePicture -}}
+    {{/* pretty sure this is wrong / incomplete - see responsive breakpoints tag generator */}}
+    <source srcset="{{ $srcset -}} 1x" media="(min-width: {{ index $sort $i }}px)">
+    {{- end -}}
+  {{ end -}}
+  <img {{ with $class }}class="{{.}}" {{ end }}
+    {{- $viewWidth := 50 -}}
+    srcset="{{delimit (.Scratch.Get "srcsetdef") ",\n               " }}"
+    {{ if $multipleSizes -}}
+        sizes="{{- $last := sub (len $sizes) 1 -}}
+        {{- range $sz := $sizes -}}
+        {{- printf "(max-width: %dpx) %dvw,\n           " $sz $viewWidth -}}
+        {{ end }}
+        {{- printf "%dpx" (index (last 2 $sizes) 0) -}} " {{/* next to last seems arbitrary */}}
+    {{ else }}
+        sizes="{{- $sz := index $sizes 0 -}}
+        {{- printf "(max-width: %dpx) %dvw" $sz $viewWidth -}}"
+    {{ end -}}
+    src="{{- $.Scratch.Get "srcPath" -}}"
+    {{ with $title | default $caption }} title="{{.}}"{{- end -}}
+    {{ with $alt | default (or $title $caption) }} alt="{{.}}"{{ end }} >
+    {{- if $usePicture -}}
+    </picture>
+    {{- end -}}
+    {{ if or (or $title $caption) $attr -}}
+      <figcaption>
+      {{ if $title -}}<h4 class="b fw6">{{ $title }}</h4>{{ end }}
+      {{ if or $caption $attr -}}
+        <h4 class="i fw4">{{- $caption -}}
+          {{- with $attrlink -}} &nbsp;&mdash; <a href="{{.}}"> {{- end -}}
+            {{- $attr -}}
+            {{- if $attrlink -}}</a>{{- end -}}
+        </h4>
+      {{- end -}}
+    </figcaption>
+    {{ end }}
+  {{- if (or $title $caption) -}}
+  </figure>
+  {{ end -}}
+</div>
+<p>{{/* ... and open markdown's paragraph again */}}
