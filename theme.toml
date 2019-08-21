@@ -6,7 +6,7 @@ license = "Apache 2.0"
 licenselink = "https://github.com/JonathanDoughty/hugo-responsive-components/blob/master/LICENSE"
 description = "Partials and Shortcodes to generate responsive images"
 homepage = "https://github.com/JonathanDoughty/hugo-responsive-components.git"
-tags = [hugo responsive images]
+tags = ['hugo', 'responsive', 'images']
 features = []
 min_version = "0.41"
 
